@@ -1,0 +1,49 @@
+name: TestForgeSafety
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest 
+
+    steps:
+      
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+    
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.23'  
+
+      - name: Init mod 
+        working-directory: app/src
+        run: go mod init app
+      
+      - name: Install dependencies
+        working-directory: app/src
+        run: go mod tidy
+        
+
+      - name: Run tests
+        working-directory: app/src
+        run: go test -v ./...
+
+
+  require-tests-passing:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event.pull_request.head.ref != 'main'
+
+    steps:
+      - name: Check if tests passed
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Tests did not pass. Merge is not allowed."
+            exit 1
+          fi

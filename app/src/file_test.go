@@ -23,7 +23,7 @@ func directoryExists(path string) (bool, error) {
 func writeTestFile(path string, fileContents string) error {
 
 	// Attempt to generate TestFiles
-	err := os.WriteFile(path+"/main.go", []byte(fileContents), FILEPERM)
+	err := os.WriteFile(path, []byte(fileContents), FILEPERM)
 	// Attempt to generate TestFiles
 
 	return err
@@ -55,18 +55,19 @@ func cleanup(path string) bool {
 
 func TestReadFileToLines(t *testing.T) {
 
+	// pre testing error catching
 	var errors []error
-
 	errors = append(errors, writeTestDirectory("test"))
-	errors = append(errors, writeTestFile("test", "")) // Make the temp files
+	errors = append(errors, writeTestFile("test/main.go", "package main\n import \"fmt\" func main(){\n\n\tfmt.Println(\"Hello world!\")\n\n}")) // Make the temp files
 
 	for _, err := range errors {
 
 		if err != nil {
-			t.Errorf("Error - TestReadFileToLines: %s | ", err)
+			t.Errorf("Error - TestReadFileToLines: %s", err)
 		}
 
 	}
+	// pre testing error catching
 
 	// file, err := os.ReadFile()
 

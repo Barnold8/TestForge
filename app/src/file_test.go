@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -21,11 +23,7 @@ func directoryExists(path string) (bool, error) {
 }
 
 func writeTestFile(path string, fileContents string) error {
-
-	// Attempt to generate TestFiles
 	err := os.WriteFile(path, []byte(fileContents), FILEPERM)
-	// Attempt to generate TestFiles
-
 	return err
 }
 
@@ -48,17 +46,24 @@ func writeTestDirectory(path string) error {
 	return nil
 }
 
-func cleanup(path string) bool {
-
-	return false
+func cleanup(path string) error {
+	err := os.RemoveAll(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err
 }
 
 func TestReadFileToLines(t *testing.T) {
 
+	PATH := "tests/"
+
 	// pre testing error catching
 	var errors []error
-	errors = append(errors, writeTestDirectory("test"))
-	errors = append(errors, writeTestFile("test/main.go", "package main\n import \"fmt\" func main(){\n\n\tfmt.Println(\"Hello world!\")\n\n}")) // Make the temp files
+	errors = append(errors, writeTestDirectory("tests"))
+	errors = append(errors, writeTestFile(PATH+"main.go", "package main\nimport \"fmt\"\n\n func main(){\n\n\tfmt.Println(\"Hello world!\")\n\n}")) // Make the temp files
+	errors = append(errors, writeTestFile(PATH+"main.txt", "Hello world\n\nThis is my test file!"))
+	errors = append(errors, writeTestFile(PATH+"empty.txt", ""))
 
 	for _, err := range errors {
 
@@ -69,13 +74,36 @@ func TestReadFileToLines(t *testing.T) {
 	}
 	// pre testing error catching
 
-	// file, err := os.ReadFile()
+	tests := []struct {
+		name     string
+		path     string
+		expected []string
+	}{
+		{"Read main.go", "tests/main.go", strings.Split("package main\nimport \"fmt\"\n\n func main(){\n\n\tfmt.Println(\"Hello world!\")\n\n}", "\n")},
+		{"Read main.txt", "tests/main.txt", strings.Split("Hello world\n\nThis is my test file!", "\n")},
+		{"Read empty.txt", "tests/empty.txt", strings.Split("", "\n")},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 
-	// if err != nil {
-	// 	panic(err)
-	// }
+			result, err := readFileToLines(tc.path)
 
-	// contentsByNewLine := strings.Split(string(file), "\n")
+			if err != nil {
+				cleanup(PATH)
+				t.Errorf("Error - TestReadFileToLines: %s", err)
+			} else if reflect.DeepEqual(result, tc.expected) == false {
+				cleanup(PATH)
+				t.Error("Error - TestReadFileToLines: result and tc.expected do not match")
+				t.Errorf("== RESULT ==\n\n%s\n\n == EXPECTED ==\n\n%s\n\n", result, tc.expected)
+			}
 
-	// return contentsByNewLine
+		})
+	}
+
+	// cleanup after testing
+
+	cleanup(PATH)
+
+	// cleanup after testing
+
 }

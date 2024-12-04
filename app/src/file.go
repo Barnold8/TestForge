@@ -5,14 +5,14 @@ import (
 	"strings"
 )
 
-func readFileToLines(path string) []string {
+func readFileToLines(path string) ([]string, error) {
 	file, err := os.ReadFile(path)
 
 	if err != nil {
-		panic(err)
+		return []string{""}, err
 	}
 
 	contentsByNewLine := strings.Split(string(file), "\n")
 
-	return contentsByNewLine
+	return contentsByNewLine, err
 }

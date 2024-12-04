@@ -20,10 +20,10 @@ func directoryExists(path string) (bool, error) {
 	return info.IsDir(), nil
 }
 
-func writeTestFiles(path string) error {
+func writeTestFile(path string, fileContents string) error {
 
 	// Attempt to generate TestFiles
-	err := os.WriteFile(path+"/main.go", []byte("package main\n\nfunc main(){\n\n\tfmt.Println(\"Hello World\")\n\n}"), FILEPERM)
+	err := os.WriteFile(path+"/main.go", []byte(fileContents), FILEPERM)
 	// Attempt to generate TestFiles
 
 	return err

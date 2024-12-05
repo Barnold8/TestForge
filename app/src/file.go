@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,17 +19,17 @@ func readFileToLines(path string) ([]string, error) {
 }
 
 func seekGoFiles(path string, overWrite bool) ([]string, error) {
-	// if overwrite is false, remove all .go files that have a _test counterpart
+
 	var goFiles []string
 	fileMap := make(map[string]string)
 
 	err := filepath.WalkDir(path, func(path string, d os.DirEntry, err error) error {
 		if !d.IsDir() && strings.HasSuffix(d.Name(), ".go") {
 
-			if strings.HasSuffix(d.Name(), "_test.go") && !overWrite {
-				delete(fileMap, strings.Split(d.Name(), "_test")[0]+".go")
+			if strings.HasSuffix(d.Name(), "_test.go") && !overWrite { // if overwrite is false, remove all .go files that have a _test counterpart
+				delete(fileMap, strings.Split(path, "_test")[0]+".go") // thankfully this function is written well so no error avoidance is needed
 			} else if !strings.HasSuffix(d.Name(), "_test.go") {
-				fileMap[d.Name()] = d.Name()
+				fileMap[path] = path
 			}
 
 		}
@@ -38,7 +37,9 @@ func seekGoFiles(path string, overWrite bool) ([]string, error) {
 		return nil
 	})
 
-	fmt.Println(fileMap)
+	for key := range fileMap {
+		goFiles = append(goFiles, key)
+	}
 
 	return goFiles, err
 }

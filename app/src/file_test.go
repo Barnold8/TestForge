@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -96,7 +97,27 @@ func TestReadFileToLines(t *testing.T) {
 			} else if reflect.DeepEqual(result, tc.expected) == false {
 				cleanup(PATH)
 				t.Error("Error - TestReadFileToLines: result and tc.expected do not match")
-				t.Errorf("== RESULT ==\n\n%s\n\n == EXPECTED ==\n\n%s\n\n", result, tc.expected)
+
+				if len(tc.expected) > len(result) {
+					for _, value := range tc.expected {
+
+						if slices.Contains(result, value) {
+							t.Errorf("%s is in expected\n", value)
+						} else {
+							t.Errorf("%s is not in expected\n", value)
+						}
+					}
+				} else {
+					for _, value := range result {
+
+						if slices.Contains(tc.expected, value) {
+							t.Errorf("%s is in expected\n", value)
+						} else {
+							t.Errorf("%s is not in expected\n", value)
+						}
+					}
+				}
+				// t.Errorf("== RESULT ==\n\n%s\n\n == EXPECTED ==\n\n%s\n\n", result, tc.expected)
 			}
 
 		})
@@ -139,6 +160,7 @@ func TestSeekGoFiles(t *testing.T) {
 	errors = append(errors, writeTestFile(PATH+"/test1/go.go", ""))
 	errors = append(errors, writeTestFile(PATH+"/test1/go.go.go", ""))
 	errors = append(errors, writeTestFile(PATH+"/test1/goooooo.go", ""))
+	errors = append(errors, writeTestFile(PATH+"/test1/goooooo_test.go", ""))
 	errors = append(errors, writeTestFile(PATH+"/test1/go.gooooo", ""))
 	errors = append(errors, writeTestFile(PATH+"/test1/go.pp", ""))
 	errors = append(errors, writeTestFile(PATH+"/test1/go.csv", ""))
@@ -172,6 +194,7 @@ func TestSeekGoFiles(t *testing.T) {
 	// test1/f directory
 	errors = append(errors, writeTestFile(PATH+"/test1/f/go.go", ""))
 	errors = append(errors, writeTestFile(PATH+"/test1/f/go_.go", ""))
+	errors = append(errors, writeTestFile(PATH+"/test1/f/go__test.go", ""))
 	errors = append(errors, writeTestFile(PATH+"/test1/f/go .go", ""))
 
 	// test1/g directory
@@ -181,6 +204,8 @@ func TestSeekGoFiles(t *testing.T) {
 
 	// test1/a/a directory
 	errors = append(errors, writeTestFile(PATH+"/test1/a/a/go.go", ""))
+	errors = append(errors, writeTestFile(PATH+"/test1/a/a/go_test.go", ""))
+	errors = append(errors, writeTestFile(PATH+"/test1/a/a/goNonTest.go", ""))
 
 	// test1/a/b directory
 	errors = append(errors, writeTestFile(PATH+"/test1/a/b/go.go", ""))
@@ -199,16 +224,41 @@ func TestSeekGoFiles(t *testing.T) {
 	// pre testing error catching
 
 	tests := []struct {
-		name     string
-		path     string
-		expected []string
+		name      string
+		path      string
+		expected  []string
+		overWrite bool
 	}{
 		{
-			"Test Temp directories",
+			"Test Temp directories while igoring existing tests",
 			"tests",
 			[]string{
 				PATH + "main.go",
-
+				PATH + "test1\\go.go",
+				PATH + "test1\\go.go.go",
+				PATH + "test1\\a\\go.go",
+				PATH + "test1\\b\\go.go",
+				PATH + "test1\\b\\g0.go",
+				PATH + "test1\\b\\g-o.go",
+				PATH + "test1\\c\\go_.go",
+				PATH + "test1\\c\\go .go",
+				PATH + "test1\\d\\GO.go",
+				PATH + "test1\\e\\go.goo.go",
+				PATH + "test1\\f\\go.go",
+				PATH + "test1\\f\\go .go",
+				PATH + "test1\\g\\gò.go",
+				PATH + "test1\\g\\gó.go",
+				PATH + "test1\\g\\g.go",
+				PATH + "test1\\a\\a\\goNonTest.go",
+				PATH + "test1\\a\\b\\go.go",
+				PATH + "test1\\a\\c\\go.go",
+			}, false,
+		},
+		{
+			"Test Temp directories while overwriting tests",
+			"tests",
+			[]string{
+				PATH + "main.go",
 				PATH + "test1\\go.go",
 				PATH + "test1\\go.go.go",
 				PATH + "test1\\goooooo.go",
@@ -227,15 +277,16 @@ func TestSeekGoFiles(t *testing.T) {
 				PATH + "test1\\g\\gó.go",
 				PATH + "test1\\g\\g.go",
 				PATH + "test1\\a\\a\\go.go",
+				PATH + "test1\\a\\a\\goNonTest.go",
 				PATH + "test1\\a\\b\\go.go",
 				PATH + "test1\\a\\c\\go.go",
-			},
+			}, true,
 		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			result, err := seekGoFiles(tc.path)
+			result, err := seekGoFiles(tc.path, tc.overWrite)
 
 			sort.Strings(result)
 			sort.Strings(tc.expected)
@@ -245,8 +296,25 @@ func TestSeekGoFiles(t *testing.T) {
 				t.Errorf("Error - TestSeekGoFiles: %s\n", err)
 			} else if reflect.DeepEqual(result, tc.expected) != true {
 				cleanup(PATH)
-				t.Error("Error - TestSeekGoFiles: result and tc.expected do not match")
-				t.Errorf("\n\n== RESULT (Len: %d) ==\n\n%s\n\n == EXPECTED (Len: %d)==\n\n%s\n\n", len(result), result, len(tc.expected), tc.expected)
+				if len(tc.expected) > len(result) {
+					for _, value := range tc.expected {
+
+						if slices.Contains(result, value) {
+							t.Errorf("%s is in expected\n", value)
+						} else {
+							t.Errorf("%s is not in expected\n", value)
+						}
+					}
+				} else {
+					for _, value := range result {
+
+						if slices.Contains(tc.expected, value) {
+							t.Errorf("%s is in expected\n", value)
+						} else {
+							t.Errorf("%s is not in expected\n", value)
+						}
+					}
+				}
 			}
 		})
 	}

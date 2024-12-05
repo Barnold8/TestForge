@@ -68,6 +68,7 @@ func TestReadFileToLines(t *testing.T) {
 	for _, err := range errors {
 
 		if err != nil {
+			cleanup(PATH)
 			t.Errorf("Error - TestReadFileToLines: %s", err)
 		}
 
@@ -99,6 +100,37 @@ func TestReadFileToLines(t *testing.T) {
 
 		})
 	}
+
+	// cleanup after testing
+
+	cleanup(PATH)
+
+	// cleanup after testing
+
+}
+
+func TestSeekGoFiles(t *testing.T) {
+	PATH := "tests/"
+
+	// pre testing error catching
+	var errors []error
+	errors = append(errors, writeTestDirectory("tests"))
+	errors = append(errors, writeTestDirectory("tests/test1"))
+	errors = append(errors, writeTestDirectory("tests/test2"))
+	errors = append(errors, writeTestDirectory("tests/test3"))
+	errors = append(errors, writeTestDirectory("tests/test4"))
+	errors = append(errors, writeTestFile(PATH+"main.go", ""))
+	errors = append(errors, writeTestFile(PATH+"main.txt", ""))
+	errors = append(errors, writeTestFile(PATH+"empty.txt", ""))
+
+	for _, err := range errors {
+
+		if err != nil {
+			t.Errorf("Error - TestReadFileToLines: %s", err)
+		}
+
+	}
+	// pre testing error catching
 
 	// cleanup after testing
 

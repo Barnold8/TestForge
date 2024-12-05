@@ -46,3 +46,4 @@ func seekGoFiles(path string) ([]string, error) {
 // 				then build that string array to a singular string for easier processing
 // 					get function args from all stuff after "(" and before ")", this can then be split up via "," as a delimeter
 //					get function returns from all stuff after "(" and before "{"
+//

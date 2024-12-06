@@ -11,7 +11,8 @@ import (
 	"testing"
 )
 
-var FILEPERM fs.FileMode = 0600
+var FILEPERM_test fs.FileMode = 0600
+var PATH string = "tests\\"
 
 func directoryExists(path string) (bool, error) {
 	info, err := os.Stat(path)
@@ -25,7 +26,7 @@ func directoryExists(path string) (bool, error) {
 }
 
 func writeTestFile(path string, fileContents string) error {
-	err := os.WriteFile(path, []byte(fileContents), FILEPERM)
+	err := os.WriteFile(path, []byte(fileContents), FILEPERM_test)
 	return err
 }
 
@@ -39,7 +40,7 @@ func writeTestDirectory(path string) error {
 	if exists == true {
 		return fmt.Errorf("Error - writeTestDirectory: Tried writing test directory (%s), but it already exists\n", path)
 	} else {
-		possibleError := os.Mkdir(path, FILEPERM)
+		possibleError := os.Mkdir(path, FILEPERM_test)
 		if possibleError != nil {
 			return possibleError
 		}
@@ -57,9 +58,6 @@ func cleanup(path string) error {
 }
 
 func TestReadFileToLines(t *testing.T) {
-
-	PATH := "tests\\"
-
 	// pre testing error catching
 	var errors []error
 	errors = append(errors, writeTestDirectory("tests"))
@@ -132,8 +130,6 @@ func TestReadFileToLines(t *testing.T) {
 }
 
 func TestSeekGoFiles(t *testing.T) {
-	PATH := "tests\\"
-
 	// pre testing error catching
 	var errors []error
 	errors = append(errors, writeTestDirectory("tests"))
@@ -324,5 +320,87 @@ func TestSeekGoFiles(t *testing.T) {
 	cleanup(PATH)
 
 	// cleanup after testing
+
+}
+
+func TestWriteFile(t *testing.T) {
+	// pre testing error catching
+	var errors []error
+	errors = append(errors, writeTestDirectory("tests"))
+
+	for _, err := range errors {
+
+		if err != nil {
+			cleanup(PATH)
+			t.Errorf("Error - TestReadFileToLines: %s", err)
+		}
+
+	}
+	// pre testing error catching
+	tests := []struct {
+		name     string
+		path     string
+		contents string
+		expected []string
+	}{
+		{
+			"main.go write",
+			PATH + "main.go",
+			"package main\n\nimport \"fmt\"\n\nfunc main(){\n\n\tfmt.Println(\"Hello world\")\n\n}",
+			[]string{"package main", "", "import \"fmt\"", "", "func main(){", "", "\tfmt.Println(\"Hello world\")", "", "}"},
+		},
+		{
+			"test.txt write",
+			PATH + "test.txt",
+			"hello world\ngoodbye universe\nThe quick brown fox jumps over the lazy dog\nThe sun dipped below the horizon, painting the sky in hues of orange and purple.\nA curious cat peeked into the box, only to find it empty.\nThe old bookstore smelled of leather and parchment, a treasure trove of forgotten stories.\nHe poured a steaming cup of coffee and watched the rain tap against the window.\nThe sound of laughter echoed through the park as children chased each other around.\nA soft breeze carried the scent of blooming jasmine through the open window.\nShe flipped through the album, each photo capturing a moment frozen in time.\nThe robot whirred to life, blinking its LED eyes with curiosity.\nMountains loomed in the distance, their peaks kissed by drifting clouds.\nBeneath the waves, a vibrant coral reef thrived with life and color.",
+			[]string{"hello world", "goodbye universe", "The quick brown fox jumps over the lazy dog", "The sun dipped below the horizon, painting the sky in hues of orange and purple.", "A curious cat peeked into the box, only to find it empty.", "The old bookstore smelled of leather and parchment, a treasure trove of forgotten stories.", "He poured a steaming cup of coffee and watched the rain tap against the window.", "The sound of laughter echoed through the park as children chased each other around.", "A soft breeze carried the scent of blooming jasmine through the open window.", "She flipped through the album, each photo capturing a moment frozen in time.", "The robot whirred to life, blinking its LED eyes with curiosity.", "Mountains loomed in the distance, their peaks kissed by drifting clouds.", "Beneath the waves, a vibrant coral reef thrived with life and color."},
+		},
+		{
+			"empty.txt write",
+			PATH + "empty.txt",
+			"",
+			[]string{""},
+		},
+		{
+			"test_test.go write",
+			PATH + "test_test.go",
+			"package main\n\nimport \"fmt\"\n\nfunc TestFunction1(){\n\n}\n\nfunc TestFunction2(){\n\n}\n\nfunc TestFunction3(){\n\n}\n\nfunc TestFunction4(){\n\n}\n\nfunc TestFunction5(){\n\n}\n\n",
+			[]string{"package main", "", "import \"fmt\"", "", "func TestFunction1(){", "", "}", "", "func TestFunction2(){", "", "}", "", "func TestFunction3(){", "", "}", "", "func TestFunction4(){", "", "}", "", "func TestFunction5(){", "", "}", "", ""},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := writeFile(tc.path, tc.contents)
+
+			if err != nil {
+				cleanup(PATH)
+				t.Errorf("Error - TestWriteFile: %s\n", err)
+			}
+			result, err := readFileToLines(tc.path)
+
+			if err != nil {
+				cleanup(PATH)
+				t.Errorf("Error - TestWriteFile: %s\n", err)
+			}
+
+			if !reflect.DeepEqual(tc.expected, result) {
+				cleanup(PATH)
+				t.Error("Error - TestWriteFile:\n\n == RESULT ==")
+				for _, value := range result {
+					cleanup(PATH)
+					t.Error(value)
+				}
+				t.Error("\n\n == EXPECTED ==")
+				for _, value := range tc.expected {
+					cleanup(PATH)
+					t.Error(value)
+				}
+			}
+
+		})
+	}
+
+	cleanup(PATH)
 
 }

@@ -12,7 +12,7 @@ import (
 )
 
 var FILEPERM_test fs.FileMode = 0644
-var PATH string = "./tests/"
+var PATH string = "tests/"
 
 func directoryExists(path string) (bool, error) {
 	info, err := os.Stat(path)

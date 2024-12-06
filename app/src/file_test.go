@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-var FILEPERM_test fs.FileMode = 0600
+var FILEPERM_test fs.FileMode = 0644
 var PATH string = "tests/"
 
 func directoryExists(path string) (bool, error) {
@@ -247,7 +247,7 @@ func TestSeekGoFiles(t *testing.T) {
 				PATH + "test1/g/g.go",
 				PATH + "test1/a/a/goNonTest.go",
 				PATH + "test1/a/b/go.go",
-				PATH + "test1/a/c/go.go",
+				PATH + "test1/a/c/go.go0",
 			}, false,
 		},
 		{

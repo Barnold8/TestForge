@@ -40,7 +40,7 @@ func writeTestDirectory(path string) error {
 	if exists == true {
 		return fmt.Errorf("Error - writeTestDirectory: Tried writing test directory (%s), but it already exists\n", path)
 	} else {
-		possibleError := os.Mkdir(path, FILEPERM_test)
+		possibleError := os.Mkdir(path, 0755)
 		if possibleError != nil {
 			return possibleError
 		}

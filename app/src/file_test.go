@@ -247,7 +247,7 @@ func TestSeekGoFiles(t *testing.T) {
 				PATH + "test1/g/g.go",
 				PATH + "test1/a/a/goNonTest.go",
 				PATH + "test1/a/b/go.go",
-				PATH + "test1/a/c/go.go0",
+				PATH + "test1/a/c/go.go",
 			}, false,
 		},
 		{

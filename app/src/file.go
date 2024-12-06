@@ -1,10 +1,13 @@
 package main
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 )
+
+var FILEPERM fs.FileMode = 0644
 
 func readFileToLines(path string) ([]string, error) {
 	file, err := os.ReadFile(path)
@@ -44,11 +47,56 @@ func seekGoFiles(path string, overWrite bool) ([]string, error) {
 	return goFiles, err
 }
 
+func writeFile(path string, contents string) error {
+
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, FILEPERM)
+	if err != nil {
+		file.Close()
+		return err
+	}
+	_, err = file.WriteString(contents)
+
+	if err != nil {
+		file.Close()
+		return err
+	}
+
+	file.Close()
+
+	return nil
+}
+
+// func seekGoFilesAndWriteFile(path string, overWrite bool) ([]string, error) {
+
+// 	var goFiles []string
+// 	fileMap := make(map[string]string)
+
+// 	err := filepath.WalkDir(path, func(path string, d os.DirEntry, err error) error {
+// 		if !d.IsDir() && strings.HasSuffix(d.Name(), ".go") {
+
+// 			if strings.HasSuffix(d.Name(), "_test.go") && !overWrite { // if overwrite is false, remove all .go files that have a _test counterpart
+// 				delete(fileMap, strings.Split(path, "_test")[0]+".go") // thankfully this function is written well so no error avoidance is needed
+// 			} else if !strings.HasSuffix(d.Name(), "_test.go") {
+// 				fileMap[path] = path
+// 			}
+
+// 		}
+
+// 		return nil
+// 	})
+
+// 	for key := range fileMap {
+// 		goFiles = append(goFiles, key)
+// 	}
+
+// 	return goFiles, err
+// }
+
 // TODO:
 
-// Have a directory that we look into, this will probably come in through a CLI arg
-// 	Walk through that directory, even into sub directories and log all the go files that dont have a test version of themselves (maybe add a override to overwrite existing test files)
-//
+// Parse command line args for options in test generation
+// 	Overwrite mode
+//  Append mode
 
 // Make a test file for a given .go file
 // 	go through file strings

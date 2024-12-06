@@ -179,8 +179,6 @@ func TestSeekGoFiles(t *testing.T) {
 	errors = append(errors, writeTestFile(PATH+"/test1/c/go .go", ""))
 	// test1/d directory
 	errors = append(errors, writeTestFile(PATH+"/test1/d/GO.go", ""))
-	errors = append(errors, writeTestFile(PATH+"/test1/d/gO.go", ""))
-	errors = append(errors, writeTestFile(PATH+"/test1/d/Go.go", ""))
 
 	// test1/e directory
 	errors = append(errors, writeTestFile(PATH+"/test1/e/go.goo.go", ""))

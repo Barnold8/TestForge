@@ -21,7 +21,7 @@ type goFile struct {
 func ParseFile(path string) goFile {
 
 	var file = goFile{}
-	// var goFunction goFunction
+	packageFound := false
 	file.filePath = path
 	fileContents, err := readFileToLines(path)
 
@@ -34,12 +34,13 @@ func ParseFile(path string) goFile {
 
 		if !strings.Contains(fileContents[i], "//") { // doesnt account for strings that have "//" in them, probably wont occur within a function or package declaration
 
-			if strings.Contains(fileContents[i], "package") {
+			if strings.Contains(fileContents[i], "package") && !packageFound {
 				file.filepackage = fileContents[i]
+				packageFound = true
 			}
 
 			if strings.Contains(fileContents[i], "func") {
-				file.fileFunctions = append(file.fileFunctions, parseFunction(&fileContents, i))
+				file.fileFunctions = append(file.fileFunctions, parseFunction(&fileContents, i)) // IF an optimisation is needed, set I to where this function leaves off so the same lines arent being read again
 			}
 
 		}
@@ -73,9 +74,6 @@ func parseFunction(contents *[]string, index int) goFunction {
 				goFunc.funcName = matches[1]
 				goFunc.funcArgs = strings.Split(matches[2], ",")
 				goFunc.funcReturn = matches[3]
-
-				fmt.Printf("Name: %s\nArgs: %s\nReturn %s\n\n\n", goFunc.funcName, goFunc.funcArgs, goFunc.funcReturn)
-
 			}
 
 			return goFunc

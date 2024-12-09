@@ -73,6 +73,9 @@ func parseFunction(contents *[]string, index int) goFunction {
 
 				goFunc.funcName = matches[1]
 				goFunc.funcArgs = strings.Split(matches[2], ",")
+				if goFunc.funcArgs[0] == "" {
+					goFunc.funcArgs = nil
+				}
 				goFunc.funcReturn = matches[3]
 			}
 

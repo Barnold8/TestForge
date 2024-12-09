@@ -74,7 +74,6 @@ func parseFunction(contents *[]string, index int) goFunction {
 				goFunc.funcName = matches[1]
 				goFunc.funcArgs = strings.Split(matches[2], ",")
 				if goFunc.funcArgs[0] == "" {
-					fmt.Printf("FOR SANITY %s\n\n\nCONTENTS: %s\n\n", goFunc.funcArgs, (*contents)[i])
 					goFunc.funcArgs = nil
 				}
 				goFunc.funcReturn = matches[3]

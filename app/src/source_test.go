@@ -10,10 +10,11 @@ func TestParseFile(t *testing.T) {
 	// pre testing error catching
 	var errors []error
 	errors = append(errors, writeTestDirectory("tests"))
-	errors = append(errors, writeTestFile(PATH+"main.go", "package main\nimport \"fmt\"\n\n func main(){\n\n\tfmt.Println(\"Hello world!\")\n\n}")) // Make the temp files
+	errors = append(errors, writeTestFile(PATH+"main.go", "package main\nimport \"fmt\"\n\nfunc main(){\n\n\tfmt.Println(\"Hello world!\")\n\n}")) // Make the temp files
 	errors = append(errors, writeTestFile(PATH+"main.txt", "Hello world\n\nThis is my test file!"))
 	errors = append(errors, writeTestFile(PATH+"empty.txt", ""))
-	errors = append(errors, writeTestFile(PATH+"test1.go", "package main\nimport \"fmt\"\n\n func printNumbers(int x, int y){\n\n\tfmt.Printf(\"%d %d\",x,y))")) // Make the temp files
+	errors = append(errors, writeTestFile(PATH+"test1.go", "package tests\nimport \"fmt\"\n\nfunc printNumbers(x int,y int){\n\n\tfmt.Printf(\"%d %d\",x,y)\n}")) // Make the temp files
+	errors = append(errors, writeTestFile(PATH+"test2.go", "package testingTHIS\nimport \"fmt\"\n\nfunc a_REALLY_stupidFunction_NaMe(fff []error) int {\n\n\tfmt.Printf(\"%d %d\",x,y)\n}"))
 
 	for _, err := range errors {
 
@@ -45,6 +46,33 @@ func TestParseFile(t *testing.T) {
 			"tests/main.txt",
 			"",
 			nil,
+		}},
+		{"empty.txt", "tests/empty.txt", goFile{
+			"tests/empty.txt",
+			"",
+			nil,
+		}},
+		{"test1.go", "tests/test1.go", goFile{
+			"tests/test1.go",
+			"package tests",
+			[]goFunction{
+				goFunction{
+					"printNumbers",
+					[]string{"x int", "y int"},
+					"",
+				},
+			},
+		}},
+		{"test2.go", "tests/test2.go", goFile{
+			"tests/test2.go",
+			"package testingTHIS",
+			[]goFunction{
+				goFunction{
+					"a_REALLY_stupidFunction_NaMe",
+					[]string{"fff []error"},
+					"int",
+				},
+			},
 		}},
 	}
 	for _, tc := range tests {
@@ -83,19 +111,22 @@ func TestParseFile(t *testing.T) {
 						}
 
 						if result.fileFunctions[i].funcReturn != tc.expected.fileFunctions[i].funcReturn {
-							t.Errorf("Function return %s (result) VS Function return %s (expected)\n\n", result.fileFunctions[i].funcName, tc.expected.fileFunctions[i].funcName)
+							t.Errorf("Function return %s (result) VS Function return %s (expected)\n\n", result.fileFunctions[i].funcReturn, tc.expected.fileFunctions[i].funcReturn)
 						}
 
 						if !reflect.DeepEqual(result.fileFunctions[i].funcArgs, tc.expected.fileFunctions[i].funcArgs) {
 							if len(result.fileFunctions[i].funcArgs) != len(tc.expected.fileFunctions[i].funcArgs) {
 								t.Errorf("Error - TestParseFile - Mismatched function arg lengths\n\n %d (result) VS %d (expected)\n\n", len(result.fileFunctions[i].funcArgs), len(tc.expected.fileFunctions[i].funcArgs))
+								return
 							}
+
+							for j := range result.fileFunctions[i].funcArgs {
+
+								t.Errorf("Result arg[%d]: %s VS EXPECTED arg[%d]: %s", j, result.fileFunctions[i].funcArgs[j], j, tc.expected.fileFunctions[i].funcArgs[j])
+							}
+
 						}
-
 					}
-
-					t.Errorf("Error - TestParseFile - Printing raw output\n\nRESULT: LENGTH[%d] DATA %v IS_NIL %v\n\nEXPECTED: LENGTH[%d] DATA %v IS_NIL %v\n\n", len(result.fileFunctions), result.fileFunctions, result.fileFunctions == nil, len(tc.expected.fileFunctions), tc.expected.fileFunctions, tc.expected.fileFunctions == nil)
-
 				}
 
 			}

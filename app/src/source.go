@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -46,6 +47,8 @@ func ParseFile(path string) goFile {
 		}
 	}
 
+	removeEmptyFuncs(&file.fileFunctions)
+
 	return file
 
 }
@@ -85,4 +88,17 @@ func parseFunction(contents *[]string, index int) goFunction {
 		}
 	}
 	return goFunc
+}
+
+func removeEmptyFuncs(array *[]goFunction) {
+
+	n := 0
+	for _, value := range *array {
+		if !reflect.DeepEqual(value, goFunction{}) {
+			(*array)[n] = value
+			n++
+		}
+	}
+	*array = (*array)[:n]
+
 }

@@ -137,3 +137,18 @@ func TestParseFile(t *testing.T) {
 	cleanup(PATH)
 
 }
+
+func TestParseFunction(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		path     string
+		expected goFile
+	}{}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+
+		})
+	}
+}

@@ -198,3 +198,64 @@ func TestParseFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestRemoveEmptyFuncs(t *testing.T) {
+
+	tests := []struct {
+		name              string
+		unParsedFunctions []goFunction
+		expected          []goFunction
+	}{
+
+		{"Test 1",
+			[]goFunction{
+				goFunction{"addition", []string{"x int", "y int"}, "int"},
+			}, []goFunction{
+				goFunction{"addition", []string{"x int", "y int"}, "int"}},
+		},
+		{"Test 2", []goFunction{}, []goFunction{}},
+		{"Test 1",
+			[]goFunction{
+				goFunction{"editInPlace", []string{}, ""},
+				goFunction{},
+				goFunction{"editOutOfPlace", []string{}, ""},
+				goFunction{},
+				goFunction{},
+				goFunction{"abcxyz", []string{"1", "2", "3"}, "error"},
+				goFunction{},
+				goFunction{},
+			}, []goFunction{
+				goFunction{"editInPlace", []string{}, ""},
+				goFunction{"editOutOfPlace", []string{}, ""},
+				goFunction{"abcxyz", []string{"1", "2", "3"}, "error"},
+			},
+		},
+		{"Test 4", []goFunction{goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}, goFunction{}}, []goFunction{}},
+		{"Test 5", []goFunction{goFunction{"main", []string{}, ""}}, []goFunction{goFunction{"main", []string{}, ""}}},
+		{"Test 6", []goFunction{
+			goFunction{"Abcdefghi", []string{"_ccc_zz_A_DFf_g_gh_zxv", "aa", "vvbbbb", ""}, ""},
+			goFunction{"", []string{"", ""}, ""},
+			goFunction{"", []string{"", ""}, ""},
+			goFunction{"", []string{"", ""}, ""},
+			goFunction{},
+			goFunction{},
+			goFunction{},
+			goFunction{},
+			goFunction{},
+		},
+			[]goFunction{goFunction{"Abcdefghi", []string{"_ccc_zz_A_DFf_g_gh_zxv", "aa", "vvbbbb", ""}, ""},
+				goFunction{"", []string{"", ""}, ""},
+				goFunction{"", []string{"", ""}, ""},
+				goFunction{"", []string{"", ""}, ""}}},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			removeEmptyFuncs(&tc.unParsedFunctions)
+
+			if !reflect.DeepEqual(tc.unParsedFunctions, tc.expected) {
+				t.Errorf("Error - TestRemoveEmptyFuncs: Result does not match expected.\nRESULT:  %v\nEXPECTED: %v\n", tc.unParsedFunctions, tc.expected)
+			}
+		})
+	}
+}

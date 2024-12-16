@@ -140,14 +140,60 @@ func TestParseFile(t *testing.T) {
 
 func TestParseFunction(t *testing.T) {
 
+	test1 := []string{`func TestParseFunction(t *testing.T) {
+		tests := []struct {
+			name     string
+			path     string
+			expected goFile
+		}{}
+	
+		for _, tc := range tests {
+			t.Run(tc.name, func(t *testing.T) {
+	
+			})
+		}
+	}`}
+
+	test2 := []string{`func addition(x int,y int) int {
+		return x + y
+	}`}
+
+	test3 := []string{``}
+
+	test4 := []string{`funcfuncfunc(x int,y int) int {
+		return x + y
+	}`}
+	test5 := []string{`def pythonFunc(x,y,z):
+		return x + y * z
+	`}
+
+	test6 := []string{`func _SomEThing_CoMpleX(ASILLYCOMPLEXDATATYPE datatypecomplex,a complexhandler) (error,complex,int,float) {
+		return x + y
+	}`}
+
 	tests := []struct {
-		name     string
-		path     string
-		expected goFile
-	}{}
+		name           string
+		functionString *[]string
+		expected       goFunction
+	}{
+
+		{"Test 1", &test1, goFunction{"TestParseFunction", []string{"t *testing.T"}, ""}},
+		{"Test 2", &test2, goFunction{"addition", []string{"x int", "y int"}, "int"}},
+		{"Test 3", &test3, goFunction{}},
+		{"Test 4", &test4, goFunction{}},
+		{"Test 5", &test5, goFunction{}},
+		{"Test 6", &test6, goFunction{"_SomEThing_CoMpleX", []string{"ASILLYCOMPLEXDATATYPE datatypecomplex", "a complexhandler"}, "(error,complex,int,float)"}},
+	}
 
 	for _, tc := range tests {
+
 		t.Run(tc.name, func(t *testing.T) {
+
+			result := parseFunction(tc.functionString, 0)
+
+			if !reflect.DeepEqual(result, tc.expected) {
+				t.Errorf("Error - TestParseFunction Resulting goFunction does not match the expected goFunction. See details below:\n\nRESULT:  %v\nEXPECTED:%v  ", result, tc.expected)
+			}
 
 		})
 	}

@@ -7,16 +7,16 @@ import (
 	"unicode"
 )
 
-func writeTests(path string, overwrite bool) {
+func writeTests(args cliArgs) {
 
-	files := gatherFiles(path, overwrite)
+	files := gatherFiles(args.seekPath, args.flags["overwrite"])
 
 	for _, value := range files {
 		var builder strings.Builder
 
 		builder.WriteString(value.filepackage + "\n\nimport(\"testing\")")
 
-		builder.WriteString(goFunctionsToString(&value.fileFunctions, true))
+		builder.WriteString(goFunctionsToString(&value.fileFunctions, args))
 
 		writeFile(formatFileName(value.filePath), builder.String())
 
@@ -41,13 +41,13 @@ func functionArgsToString(args *[]string) string {
 	return builder.String()
 }
 
-func goFunctionsToString(function *[]goFunction, writeTestCases bool) string {
+func goFunctionsToString(function *[]goFunction, args cliArgs) string {
 
 	var builder strings.Builder
 
 	for _, value := range *function {
 
-		if writeTestCases {
+		if args.flags["overwrite"] {
 
 			builder.WriteString(fmt.Sprintf(
 				"\n\nfunc Test%s(t *testing.T) {\n\n\ttests := []struct {\n\t\tname string\n\t\tinput string\n\t\texpected string\n\t}{\n\t\t{\"Test 1\",\"input\",\"output\"},\n\t}\n\tfor _, tc := range tests {\n\t\tt.Run(tc.name, func(t *testing.T){\n\t\t\t// some way to get a result\n\t\t\tresult := \"this is an example of a result\"\n\t\t\tif result != tc.expected{\n\t\t\t\t t.Errorf(\"This is an example of an error!\")\n\t\t\t}\n\t\t})\n\t}\n}",

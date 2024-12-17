@@ -14,11 +14,11 @@ func writeTests(path string, overwrite bool) {
 	for _, value := range files {
 		var builder strings.Builder
 
-		builder.WriteString(value.filepackage + "\n\n")
+		builder.WriteString(value.filepackage + "\n\nimport(\"testing\")")
 
 		builder.WriteString(goFunctionsToString(&value.fileFunctions, true))
 
-		// writeFile(formatFileName(value.filePath), builder.String())
+		writeFile(formatFileName(value.filePath), builder.String())
 
 	}
 
@@ -48,8 +48,9 @@ func goFunctionsToString(function *[]goFunction, writeTestCases bool) string {
 	for _, value := range *function {
 
 		if writeTestCases {
+
 			builder.WriteString(fmt.Sprintf(
-				"\n\nfunc Test%s(t *testing.T) {\n\n\n\ttests := []struct {\n\tname string\n\tinput string\n\texpected string\n\t}{\n\t\t{\"Test 1\",\"input\",\"output\"},\n\t}\n\n}",
+				"\n\nfunc Test%s(t *testing.T) {\n\n\ttests := []struct {\n\t\tname string\n\t\tinput string\n\t\texpected string\n\t}{\n\t\t{\"Test 1\",\"input\",\"output\"},\n\t}\n\tfor _, tc := range tests {\n\t\tt.Run(tc.name, func(t *testing.T){\n\t\t\t// some way to get a result\n\t\t\tresult := \"this is an example of a result\"\n\t\t\tif result != tc.expected{\n\t\t\t\t t.Errorf(\"This is an example of an error!\")\n\t\t\t}\n\t\t})\n\t}\n}",
 				capitalizeFunctionName(value.funcName),
 			))
 		} else {
@@ -60,10 +61,9 @@ func goFunctionsToString(function *[]goFunction, writeTestCases bool) string {
 
 		}
 
-		fmt.Println(builder.String())
 	}
 
-	return ""
+	return builder.String()
 }
 
 func capitalizeFunctionName(name string) string {

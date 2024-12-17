@@ -32,14 +32,14 @@ func parseArgs(args []string) cliArgs {
 			flagValue := matches[3]
 
 			switch flagName {
-			case "name":
+			case "path":
 				if flagValue != "" {
 					cliArgs.seekPath = flagValue
 				} else if i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 					cliArgs.seekPath = args[i+1]
 					i++
 				} else {
-					fmt.Println("Error: --name requires a value")
+					fmt.Println("Error: --path requires a value")
 				}
 			default:
 				cliArgs.flags[flagName] = true

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -27,6 +28,16 @@ func seekGoFiles(path string, overWrite bool) ([]string, error) {
 	fileMap := make(map[string]string)
 
 	err := filepath.WalkDir(path, func(path string, d os.DirEntry, err error) error {
+
+		if err != nil {
+			fmt.Printf("Error accessing path %q: %v\n", path, err)
+			return err
+		}
+
+		if d == nil {
+			return nil
+		}
+
 		if !d.IsDir() && strings.HasSuffix(d.Name(), ".go") {
 			path = strings.ReplaceAll(path, "\\", "/")
 			if strings.HasSuffix(d.Name(), "_test.go") && !overWrite { // if overwrite is false, remove all .go files that have a _test counterpart

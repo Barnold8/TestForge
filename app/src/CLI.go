@@ -41,6 +41,19 @@ func parseArgs(args []string) cliArgs {
 				} else {
 					fmt.Println("Error: --path requires a value")
 				}
+			case "ignore":
+				if flagValue != "" {
+
+				} else if i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
+
+					for !strings.HasPrefix(args[i+1], "-") {
+						fmt.Println(args[i+1])
+						i++
+					}
+
+				} else {
+					fmt.Println("Error: --path requires a value")
+				}
 			default:
 				cliArgs.flags[flagName] = true
 			}

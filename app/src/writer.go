@@ -47,7 +47,7 @@ func goFunctionsToString(function *[]goFunction, args cliArgs) string {
 
 	for _, value := range *function {
 
-		if args.flags["overwrite"] {
+		if args.flags["cases"] {
 
 			builder.WriteString(fmt.Sprintf(
 				"\n\nfunc Test%s(t *testing.T) {\n\n\ttests := []struct {\n\t\tname string\n\t\tinput string\n\t\texpected string\n\t}{\n\t\t{\"Test 1\",\"input\",\"output\"},\n\t}\n\tfor _, tc := range tests {\n\t\tt.Run(tc.name, func(t *testing.T){\n\t\t\t// some way to get a result\n\t\t\tresult := \"this is an example of a result\"\n\t\t\tif result != tc.expected{\n\t\t\t\t t.Errorf(\"This is an example of an error!\")\n\t\t\t}\n\t\t})\n\t}\n}",

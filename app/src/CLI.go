@@ -8,8 +8,9 @@ import (
 )
 
 type cliArgs struct {
-	seekPath string
-	flags    map[string]bool
+	seekPath   string
+	flags      map[string]bool
+	ignoreList []string
 }
 
 func defaultCLIargs() cliArgs {
@@ -22,12 +23,15 @@ func parseArgs(args []string) cliArgs {
 
 	cliArgs := defaultCLIargs()
 	re := regexp.MustCompile(`^--([a-zA-Z0-9-_]+)(=(.*))?$`)
+	var ignoreList []string
 
 	for i := 0; i < len(args); i++ {
+
 		arg := args[i]
 		arg = strings.ToLower(arg)
 
 		if matches := re.FindStringSubmatch(arg); matches != nil {
+
 			flagName := matches[1]
 			flagValue := matches[3]
 
@@ -41,13 +45,21 @@ func parseArgs(args []string) cliArgs {
 				} else {
 					fmt.Println("Error: --path requires a value")
 				}
+
 			case "ignore":
+
 				if flagValue != "" {
+					ignoreList = append(ignoreList, flagValue)
+
+					for i+1 < 6 && !strings.HasPrefix(args[i+1], "-") {
+						ignoreList = append(ignoreList, args[i+1])
+						i++
+					}
 
 				} else if i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 
 					for !strings.HasPrefix(args[i+1], "-") {
-						fmt.Println(args[i+1])
+						ignoreList = append(ignoreList, args[i+1])
 						i++
 					}
 
@@ -58,6 +70,10 @@ func parseArgs(args []string) cliArgs {
 				cliArgs.flags[flagName] = true
 			}
 		}
+	}
+
+	if len(ignoreList) > 0 {
+		cliArgs.ignoreList = ignoreList
 	}
 
 	if cliArgs.seekPath == "" {

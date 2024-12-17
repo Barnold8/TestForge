@@ -25,6 +25,7 @@ func parseArgs(args []string) cliArgs {
 
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
+		arg = strings.ToLower(arg)
 
 		if matches := re.FindStringSubmatch(arg); matches != nil {
 			flagName := matches[1]

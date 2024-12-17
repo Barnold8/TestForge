@@ -57,7 +57,7 @@ func goFunctionsToString(function *[]goFunction, args cliArgs) string {
 		} else {
 			builder.WriteString(fmt.Sprintf(
 				"\n\nfunc Test%s(t *testing.T) {\n\n}",
-				value.funcName,
+				capitalizeFunctionName(value.funcName),
 			))
 
 		}

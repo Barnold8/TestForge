@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode"
 )
 
 func writeTests(args cliArgs) {
 
-	files := gatherFiles(args.seekPath, args.flags["overwrite"])
+	files := gatherFiles(args)
 
 	for _, value := range files {
 		var builder strings.Builder
@@ -88,9 +89,9 @@ func formatFileName(path string) string {
 	return strings.Split(path, ".")[0] + "_test.go"
 }
 
-func gatherFiles(path string, overwrite bool) []goFile {
+func gatherFiles(args cliArgs) []goFile {
 
-	filesPaths, err := seekGoFiles(path, overwrite)
+	filesPaths, err := seekGoFiles(args.seekPath, args.flags["overwrite"])
 
 	var goFiles []goFile
 
@@ -102,7 +103,9 @@ func gatherFiles(path string, overwrite bool) []goFile {
 	} else {
 
 		for _, filePath := range filesPaths {
-			goFiles = append(goFiles, ParseFile(filePath))
+			if !slices.Contains(args.ignoreList, filePath) {
+				goFiles = append(goFiles, ParseFile(filePath))
+			}
 		}
 
 	}

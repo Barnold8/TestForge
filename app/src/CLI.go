@@ -37,7 +37,7 @@ func parseArgs(args []string) cliArgs {
 
 			switch flagName {
 			case "path":
-				if flagValue != "" {
+				if flagValue != "" { // case where user uses = in flag
 					cliArgs.seekPath = flagValue
 				} else if i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 					cliArgs.seekPath = args[i+1]
@@ -48,17 +48,17 @@ func parseArgs(args []string) cliArgs {
 
 			case "ignore":
 
-				if flagValue != "" {
+				if flagValue != "" { // case where user uses = in flag
 					ignoreList = append(ignoreList, flagValue)
 
-					for i+1 < 6 && !strings.HasPrefix(args[i+1], "-") {
+					for i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 						ignoreList = append(ignoreList, args[i+1])
 						i++
 					}
 
-				} else if i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
+				} else if !strings.HasPrefix(args[i+1], "-") {
 
-					for !strings.HasPrefix(args[i+1], "-") {
+					for i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 						ignoreList = append(ignoreList, args[i+1])
 						i++
 					}
@@ -66,6 +66,11 @@ func parseArgs(args []string) cliArgs {
 				} else {
 					fmt.Println("Error: --path requires a value")
 				}
+
+			case "help":
+
+				fmt.Println("TODO: write help information")
+
 			default:
 				cliArgs.flags[flagName] = true
 			}

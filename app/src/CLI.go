@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -44,5 +45,25 @@ func parseArgs(args []string) cliArgs {
 			}
 		}
 	}
+
+	if cliArgs.seekPath == "" {
+
+		var decision string
+
+		fmt.Println("WARNING: No path was specified. This could lead to unintended results, such as generating tests for directories you did not intend. This is especially risky if you are running this program from the top level of a storage drive.\n\nTry specifying a path with one of the following options:\n--path {your path here} or --path={your path here}")
+		fmt.Println("Run anyway? y/n: ")
+
+		fmt.Scanln(&decision)
+
+		decision = strings.ToLower(decision)
+
+		if decision == "y" {
+			cliArgs.seekPath = "."
+		} else {
+			os.Exit(1)
+		}
+
+	}
+
 	return cliArgs
 }

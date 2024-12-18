@@ -115,7 +115,6 @@ func TestReadFileToLines(t *testing.T) {
 						}
 					}
 				}
-				// t.Errorf("== RESULT ==\n\n%s\n\n == EXPECTED ==\n\n%s\n\n", result, tc.expected)
 			}
 
 		})

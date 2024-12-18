@@ -19,7 +19,11 @@ func writeTests(args cliArgs) {
 
 		builder.WriteString(goFunctionsToString(&value.fileFunctions, args))
 
-		writeFile(formatFileName(value.filePath), builder.String())
+		err := writeFile(formatFileName(value.filePath), builder.String())
+
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+		}
 
 	}
 

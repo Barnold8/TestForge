@@ -1,6 +1,8 @@
 package main
 
 import (
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -269,20 +271,178 @@ func TestFormatFileName(t *testing.T) {
 
 func TestGatherFiles(t *testing.T) {
 
+	var errors []error
+	errors = append(errors, writeTestDirectory("tests"))
+	errors = append(errors, writeTestFile(PATH+"main.go", "package main\nimport \"fmt\"\n\n func main(){\n\n\tfmt.Println(\"Hello world!\")\n\n}"))
+
+	errors = append(errors, writeTestFile(PATH+"file1.go", `
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("File 1 says hello!")
+}
+	`))
+
+	errors = append(errors, writeTestFile(PATH+"file2.go", `
+package main
+
+func add(a int,b int) int {
+	return a + b
+}
+
+func main() {
+	result := add(3, 5)
+	println("The sum is:", result)
+}
+	`))
+
+	errors = append(errors, writeTestFile(PATH+"file3.go", `
+package main
+
+func factorial(n int) int {
+	if n <= 1 {
+		return 1
+	}
+	return n * factorial(n-1)
+}
+
+func random(seed int) int {
+	// something to do with randomisation here
+}
+	`))
+
+	errors = append(errors, writeTestFile(PATH+"file4.go", `
+package main
+
+func isEven(n int) bool {
+	return n%2 == 0
+}
+
+
+	`))
+
+	errors = append(errors, writeTestFile(PATH+"file5.go", `
+package main
+
+func greet(name string) string {
+	return "Hello, " + name
+}
+
+func sayBye(name string) bool {
+	
+}
+
+
+func middleSentence(f float) error {
+	return error
+}
+
+
+func declaration(f *string)  {
+	
+}
+
+
+func randomised(a int,b int,c int,d int,e float) (string,float) {
+	
+}
+
+func main() {
+	println(greet("Go Programmer"))
+}
+	`))
+
+	errors = append(errors, writeTestFile(PATH+"file1_test.go", ""))
+
+	errors = append(errors, writeTestFile(PATH+"file2_test.go", ""))
+
+	errors = append(errors, writeTestFile(PATH+"file3_test.go", ""))
+
+	for _, err := range errors {
+
+		if err != nil {
+			cleanup(PATH)
+			t.Errorf("Error - TestGatherFiles:fffffffff %s\n", err)
+		}
+
+	}
+
 	tests := []struct {
 		name     string
-		input    string
-		expected string
+		input    cliArgs
+		expected []goFile
 	}{
-		{"Test 1", "input", "output"},
+
+		// {"Test 1", cliArgs{
+		// 	seekPath: "tests",
+		// 	flags:    map[string]bool{}}, []goFile{
+		// 	goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+		// }},
+
+		{"Test 2", cliArgs{
+			seekPath: "tests",
+			flags:    map[string]bool{"overwrite": true}},
+			[]goFile{
+				goFile{"tests/file1.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+				goFile{"tests/file2.go", "package main", []goFunction{goFunction{"add", []string{"a int", "b int"}, "int"}, goFunction{"main", nil, ""}}},
+				goFile{"tests/file3.go", "package main", []goFunction{goFunction{"factorial", []string{"n int"}, "int"}, goFunction{"random", []string{"seed int"}, "int"}}},
+				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
 	}
+
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			// some way to get a result
-			result := "this is an example of a result"
-			if result != tc.expected {
-				t.Errorf("This is an example of an error!")
+
+			result := gatherFiles(tc.input)
+
+			// Sort arrays of goFiles to ensure consistency for testing
+			sort.Slice(result, func(i, j int) bool {
+				return result[i].filePath < result[j].filePath
+			})
+
+			sort.Slice(tc.expected, func(i, j int) bool {
+				return tc.expected[i].filePath < tc.expected[j].filePath
+			})
+
+			if !reflect.DeepEqual(result, tc.expected) {
+				// cleanup(PATH)
+				t.Errorf("Error - TestGatherFiles:\n\nRESULT:\n %v\n\nEXPECTED:\n%v\n\n", result, tc.expected)
+
+				t.Error("========RESULT========\n")
+
+				for _, value := range result {
+					t.Error(value.filePath)
+					t.Error(value.filepackage)
+					t.Error(value.fileFunctions)
+					t.Error("\n\n")
+				}
+
+				t.Error("========EXPECTED========\n")
+				for _, value := range tc.expected {
+					t.Error(value.filePath)
+					t.Error(value.filepackage)
+					t.Error(value.fileFunctions)
+					t.Error("\n\n")
+				}
+
 			}
+
 		})
 	}
+
+	cleanup(PATH)
+
 }

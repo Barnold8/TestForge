@@ -1,29 +1,257 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 )
 
+func seekFiles(path string) ([]string, error) { // repurposed seekGoFiles function to actually get a list of all test files, its essentially an inverse of the function its derived from
+
+	var goFiles []string
+	fileMap := make(map[string]string)
+
+	err := filepath.WalkDir(path, func(path string, d os.DirEntry, err error) error {
+
+		if err != nil {
+			fmt.Printf("Error accessing path %q: %v\n", path, err)
+			return err
+		}
+
+		if d == nil {
+			return nil
+		}
+
+		if !d.IsDir() && strings.HasSuffix(d.Name(), ".go") {
+			path = strings.ReplaceAll(path, "\\", "/")
+
+			if strings.Contains(path, "_test") {
+				fileMap[path] = path
+			}
+
+		}
+
+		return nil
+	})
+
+	for key := range fileMap {
+		goFiles = append(goFiles, key)
+	}
+
+	return goFiles, err
+}
+
+func cleanTests(path string) error {
+
+	files, err := seekFiles(path)
+
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		err := os.Remove(file)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func TestWriteTests(t *testing.T) {
 
+	var testFilesWOcases []string
+	var testFilesWcases []string
+
+	var errors []error
+	errors = append(errors, writeTestDirectory(PATH))
+
+	errors = append(errors, writeTestFile(PATH+"file1.go", `package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("File 1 says hello!")
+}
+	`))
+
+	file1GoStringWOCases := `package main
+
+import("testing")
+
+func TestMain(t *testing.T) {
+
+}`
+
+	file1GoStringWCases := `package main
+
+import("testing")
+
+func TestMain(t *testing.T) {
+
 	tests := []struct {
-		name     string
-		input    string
+		name string
+		input string
 		expected string
 	}{
-		{"Test 1", "input", "output"},
+		{"Test 1","input","output"},
 	}
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T){
 			// some way to get a result
 			result := "this is an example of a result"
-			if result != tc.expected {
-				t.Errorf("This is an example of an error!")
+			if result != tc.expected{
+				 t.Errorf("This is an example of an error!")
 			}
 		})
 	}
+}`
+
+	testFilesWOcases = append(testFilesWOcases, file1GoStringWOCases)
+	testFilesWcases = append(testFilesWcases, file1GoStringWCases)
+
+	// errors = append(errors, writeTestFile(PATH+"file2.go", `
+	// package main
+
+	// func add(a int,b int) int {
+	// 	return a + b
+	// }
+
+	// func main() {
+	// 	result := add(3, 5)
+	// 	println("The sum is:", result)
+	// }
+	// 	`))
+
+	// errors = append(errors, writeTestFile(PATH+"file3.go", `
+	// package main
+
+	// func factorial(n int) int {
+	// 	if n <= 1 {
+	// 		return 1
+	// 	}
+	// 	return n * factorial(n-1)
+	// }
+
+	// func random(seed int) int {
+	// 	// something to do with randomisation here
+	// }
+	// 	`))
+
+	// errors = append(errors, writeTestFile(PATH+"file4.go", `
+	// package main
+
+	// func isEven(n int) bool {
+	// 	return n%2 == 0
+	// }
+
+	// 	`))
+
+	// errors = append(errors, writeTestFile(PATH+"file5.go", `
+	// package main
+
+	// func greet(name string) string {
+	// 	return "Hello, " + name
+	// }
+
+	// func sayBye(name string) bool {
+
+	// }
+
+	// func middleSentence(f float) error {
+	// 	return error
+	// }
+
+	// func declaration(f *string)  {
+
+	// }
+
+	// func randomised(a int,b int,c int,d int,e float) (string,float) {
+
+	// }
+
+	// func main() {
+	// 	println(greet("Go Programmer"))
+	// }
+	// 	`))
+
+	// errors = append(errors, writeTestFile(PATH+"file1_test.go", ""))
+
+	// errors = append(errors, writeTestFile(PATH+"file2_test.go", ""))
+
+	// errors = append(errors, writeTestFile(PATH+"file3_test.go", ""))
+
+	for _, err := range errors {
+
+		if err != nil {
+			cleanup(PATH)
+			t.Errorf("Error - TestWriteTests: %s\n", err)
+		}
+
+	}
+
+	argsPile := []cliArgs{
+		cliArgs{
+			flags:    map[string]bool{"cases": false},
+			seekPath: PATH,
+		},
+		cliArgs{
+			flags:    map[string]bool{"cases": true},
+			seekPath: PATH,
+		},
+	}
+
+	tests := []struct {
+		name     string
+		input    cliArgs
+		expected []string
+		cases    bool
+	}{
+		{"Test 1 - No Cases", argsPile[0], testFilesWOcases, false},
+		{"Test 1 - Cases", argsPile[1], testFilesWcases, true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+
+			var fileStrings []string
+
+			writeTests(tc.input) // write test files
+
+			files, err := seekFiles(PATH) // find said test files
+
+			if err != nil {
+				t.Errorf("Error - TestWriteTests: %s\n", err)
+				cleanup(PATH)
+			}
+
+			for _, file := range files { // go through test files
+
+				f, err := readFileToLines(file) // read it to an array of strings
+
+				if err != nil {
+					t.Errorf("Error - TestWriteTests: %s\n", err)
+					cleanup(PATH)
+				}
+
+				fileStrings = append(fileStrings, strings.Join(f, "\n"))
+
+			}
+			if !reflect.DeepEqual(fileStrings, tc.expected) {
+				t.Errorf("\n\nRESULT:\n%v\n\nEXPECTED: \n%v\n\n", fileStrings, tc.expected)
+			}
+		})
+
+		cleanTests(PATH)
+
+	}
+
+	cleanup(PATH)
+
 }
 
 func TestFunctionArgsToString(t *testing.T) {
@@ -271,7 +499,7 @@ func TestFormatFileName(t *testing.T) {
 
 			if result != tc.expected {
 
-				t.Errorf("Error - TestGoFunctionsToString: \n\nRESULT\n\n %s\n\nEXPECTED\n\n %s", result, tc.expected)
+				t.Errorf("Error - TestFormatFileName: \n\nRESULT\n\n %s\n\nEXPECTED\n\n %s", result, tc.expected)
 
 			}
 
@@ -382,7 +610,7 @@ func main() {
 
 		if err != nil {
 			cleanup(PATH)
-			t.Errorf("Error - TestGatherFiles:fffffffff %s\n", err)
+			t.Errorf("Error - TestGatherFiles: %s\n", err)
 		}
 
 	}
@@ -607,7 +835,7 @@ func main() {
 
 			if !reflect.DeepEqual(result, tc.expected) {
 				// cleanup(PATH)
-				t.Errorf("Error - TestGatherFiles:\n\nRESULT:\n %v\n\nEXPECTED:\n%v\n\n", result, tc.expected)
+				t.Error("Error - TestGatherFiles:\n\n")
 
 				t.Error("========RESULT========\n")
 

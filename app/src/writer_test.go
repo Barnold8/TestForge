@@ -271,6 +271,14 @@ func TestFormatFileName(t *testing.T) {
 
 func TestGatherFiles(t *testing.T) {
 
+	ignoreLists := [][]string{
+		{"tests/file1.go", "tests/file2.go"},
+		{"tests/file1.go", "tests/file2.go", "tests/file3.go", "tests/file4.go", "tests/file5.go"},
+		{"tests/file1.go"},
+		{"tests/file1.go", "tests/file2.go", "tests/file3.go"},
+		{"tests/file1.go", "tests/file2.go", "tests/file3.go", "tests/file4.go"},
+	}
+
 	var errors []error
 	errors = append(errors, writeTestDirectory("tests"))
 	errors = append(errors, writeTestFile(PATH+"main.go", "package main\nimport \"fmt\"\n\n func main(){\n\n\tfmt.Println(\"Hello world!\")\n\n}"))
@@ -375,11 +383,22 @@ func main() {
 		expected []goFile
 	}{
 
-		// {"Test 1", cliArgs{
-		// 	seekPath: "tests",
-		// 	flags:    map[string]bool{}}, []goFile{
-		// 	goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
-		// }},
+		{"Test 1", cliArgs{
+			seekPath: "tests",
+			flags:    map[string]bool{}},
+			[]goFile{
+				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
 
 		{"Test 2", cliArgs{
 			seekPath: "tests",
@@ -389,6 +408,165 @@ func main() {
 				goFile{"tests/file2.go", "package main", []goFunction{goFunction{"add", []string{"a int", "b int"}, "int"}, goFunction{"main", nil, ""}}},
 				goFile{"tests/file3.go", "package main", []goFunction{goFunction{"factorial", []string{"n int"}, "int"}, goFunction{"random", []string{"seed int"}, "int"}}},
 				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
+
+		{"Test 3", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[0],
+			flags:      map[string]bool{"overwrite": true}},
+			[]goFile{
+				goFile{"tests/file3.go", "package main", []goFunction{goFunction{"factorial", []string{"n int"}, "int"}, goFunction{"random", []string{"seed int"}, "int"}}},
+				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
+
+		{"Test 4", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[1],
+			flags:      map[string]bool{"overwrite": true}},
+			[]goFile{goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}}},
+		},
+		{"Test 5", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[2],
+			flags:      map[string]bool{"overwrite": true}},
+			[]goFile{
+				goFile{"tests/file2.go", "package main", []goFunction{goFunction{"add", []string{"a int", "b int"}, "int"}, goFunction{"main", nil, ""}}},
+				goFile{"tests/file3.go", "package main", []goFunction{goFunction{"factorial", []string{"n int"}, "int"}, goFunction{"random", []string{"seed int"}, "int"}}},
+				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
+
+		{"Test 6", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[3],
+			flags:      map[string]bool{"overwrite": true}},
+			[]goFile{
+				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
+
+		{"Test 7", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[4],
+			flags:      map[string]bool{"overwrite": true}},
+			[]goFile{
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
+
+		{"Test 8", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[0],
+			flags:      map[string]bool{}},
+			[]goFile{
+
+				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
+
+		{"Test 9", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[1],
+			flags:      map[string]bool{}},
+			[]goFile{goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}}},
+		},
+		{"Test 10", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[2],
+			flags:      map[string]bool{}},
+			[]goFile{
+
+				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
+
+		{"Test 11", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[3],
+			flags:      map[string]bool{}},
+			[]goFile{
+				goFile{"tests/file4.go", "package main", []goFunction{goFunction{"isEven", []string{"n int"}, "bool"}}},
+				goFile{"tests/file5.go", "package main", []goFunction{
+					goFunction{"greet", []string{"name string"}, "string"},
+					goFunction{"sayBye", []string{"name string"}, "bool"},
+					goFunction{"middleSentence", []string{"f float"}, "error"},
+					goFunction{"declaration", []string{"f *string"}, ""},
+					goFunction{"randomised", []string{"a int", "b int", "c int", "d int", "e float"}, "(string,float)"},
+					goFunction{"main", nil, ""},
+				}},
+				goFile{"tests/main.go", "package main", []goFunction{goFunction{"main", nil, ""}}},
+			},
+		},
+
+		{"Test 12", cliArgs{
+			seekPath:   "tests",
+			ignoreList: ignoreLists[4],
+			flags:      map[string]bool{}},
+			[]goFile{
 				goFile{"tests/file5.go", "package main", []goFunction{
 					goFunction{"greet", []string{"name string"}, "string"},
 					goFunction{"sayBye", []string{"name string"}, "bool"},

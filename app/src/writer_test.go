@@ -115,76 +115,148 @@ func TestMain(t *testing.T) {
 	testFilesWOcases = append(testFilesWOcases, file1GoStringWOCases)
 	testFilesWcases = append(testFilesWcases, file1GoStringWCases)
 
-	// errors = append(errors, writeTestFile(PATH+"file2.go", `
-	// package main
+	errors = append(errors, writeTestFile(PATH+"file2.go", `package main
 
-	// func add(a int,b int) int {
-	// 	return a + b
-	// }
+func add(a int,b int) int {
+	return a + b
+}
 
-	// func main() {
-	// 	result := add(3, 5)
-	// 	println("The sum is:", result)
-	// }
-	// 	`))
+func main() {
+	result := add(3, 5)
+	println("The sum is:", result)
+}`))
 
-	// errors = append(errors, writeTestFile(PATH+"file3.go", `
-	// package main
+	file2GoStringWOCases := `package main
 
-	// func factorial(n int) int {
-	// 	if n <= 1 {
-	// 		return 1
-	// 	}
-	// 	return n * factorial(n-1)
-	// }
+import("testing")
 
-	// func random(seed int) int {
-	// 	// something to do with randomisation here
-	// }
-	// 	`))
+func TestAdd(t *testing.T) {
 
-	// errors = append(errors, writeTestFile(PATH+"file4.go", `
-	// package main
+}
 
-	// func isEven(n int) bool {
-	// 	return n%2 == 0
-	// }
+func TestMain(t *testing.T) {
 
-	// 	`))
+}`
 
-	// errors = append(errors, writeTestFile(PATH+"file5.go", `
-	// package main
+	file2GoStringWCases := `package main
 
-	// func greet(name string) string {
-	// 	return "Hello, " + name
-	// }
+import("testing")
 
-	// func sayBye(name string) bool {
+func TestAdd(t *testing.T) {
 
-	// }
+	tests := []struct {
+		name string
+		input string
+		expected string
+	}{
+		{"Test 1","input","output"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T){
+			// some way to get a result
+			result := "this is an example of a result"
+			if result != tc.expected{
+				 t.Errorf("This is an example of an error!")
+			}
+		})
+	}
+}
 
-	// func middleSentence(f float) error {
-	// 	return error
-	// }
+func TestMain(t *testing.T) {
 
-	// func declaration(f *string)  {
+	tests := []struct {
+		name string
+		input string
+		expected string
+	}{
+		{"Test 1","input","output"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T){
+			// some way to get a result
+			result := "this is an example of a result"
+			if result != tc.expected{
+				 t.Errorf("This is an example of an error!")
+			}
+		})
+	}
+}`
 
-	// }
+	testFilesWOcases = append(testFilesWOcases, file2GoStringWOCases)
+	testFilesWcases = append(testFilesWcases, file2GoStringWCases)
 
-	// func randomised(a int,b int,c int,d int,e float) (string,float) {
+	errors = append(errors, writeTestFile(PATH+"file3.go", `package main
 
-	// }
+	func factorial(n int) int {
+		if n <= 1 {
+			return 1
+		}
+		return n * factorial(n-1)
+	}
 
-	// func main() {
-	// 	println(greet("Go Programmer"))
-	// }
-	// 	`))
+	func random(seed int) int {
+		// something to do with randomisation here
+	}
+		`))
 
-	// errors = append(errors, writeTestFile(PATH+"file1_test.go", ""))
+	file3GoStringWOCases := `package main
 
-	// errors = append(errors, writeTestFile(PATH+"file2_test.go", ""))
+import("testing")
 
-	// errors = append(errors, writeTestFile(PATH+"file3_test.go", ""))
+func TestFactorial(t *testing.T) {
+
+}
+
+func TestRandom(t *testing.T) {
+
+}`
+
+	file3GoStringWCases := `package main
+
+import("testing")
+
+func TestFactorial(t *testing.T) {
+
+	tests := []struct {
+		name string
+		input string
+		expected string
+	}{
+		{"Test 1","input","output"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T){
+			// some way to get a result
+			result := "this is an example of a result"
+			if result != tc.expected{
+				 t.Errorf("This is an example of an error!")
+			}
+		})
+	}
+}
+
+func TestRandom(t *testing.T) {
+
+	tests := []struct {
+		name string
+		input string
+		expected string
+	}{
+		{"Test 1","input","output"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T){
+			// some way to get a result
+			result := "this is an example of a result"
+			if result != tc.expected{
+				 t.Errorf("This is an example of an error!")
+			}
+		})
+	}
+}`
+
+	testFilesWOcases = append(testFilesWOcases, file3GoStringWOCases)
+	testFilesWcases = append(testFilesWcases, file3GoStringWCases)
 
 	for _, err := range errors {
 
@@ -239,10 +311,26 @@ func TestMain(t *testing.T) {
 				}
 
 				fileStrings = append(fileStrings, strings.Join(f, "\n"))
-
 			}
+
 			if !reflect.DeepEqual(fileStrings, tc.expected) {
-				t.Errorf("\n\nRESULT:\n%v\n\nEXPECTED: \n%v\n\n", fileStrings, tc.expected)
+
+				t.Error("\n\nRESULT:\n\n")
+
+				for _, value := range fileStrings {
+
+					t.Error(value)
+
+				}
+
+				t.Error("\n\nEXPECTED:\n\n")
+
+				for _, value := range tc.expected {
+
+					t.Error(value)
+
+				}
+
 			}
 		})
 

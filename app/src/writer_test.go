@@ -33,7 +33,17 @@ func TestFunctionArgsToString(t *testing.T) {
 		input    []string
 		expected string
 	}{
-		{"Test 1", []string{}, ""},
+		{"Test 1", []string{"x int", "y int", "z int"}, "x int,y int,z int"},
+		{"Test 2", []string{"e string", "x myFunType", "a someError", "m someError"}, "e string,x myFunType,a someError,m someError"},
+		{"Test 3", []string{"e float", "u float", "v error"}, "e float,u float,v error"},
+		{"Test 4", []string{"o error", "w someError", "o error"}, "o error,w someError,o error"},
+		{"Test 5", []string{"n someError", "c float", "s someError"}, "n someError,c float,s someError"},
+		{"Test 6", []string{"x someError", "l int", "x someError"}, "x someError,l int,x someError"},
+		{"Test 7", []string{"u float", "l int", "s int", "z int"}, "u float,l int,s int,z int"},
+		{"Test 8", []string{"t someError", "a float", "w error", "x someError", "p error"}, "t someError,a float,w error,x someError,p error"},
+		{"Test 9", []string{"r float", "w myFunType", "z string", "e string"}, "r float,w myFunType,z string,e string"},
+		{"Test 10", []string{"o error", "c string"}, "o error,c string"},
+		{"Test 11", []string{"m string", "x someError", "z int", "z someError", "o myFunType"}, "m string,x someError,z int,z someError,o myFunType"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -41,7 +51,7 @@ func TestFunctionArgsToString(t *testing.T) {
 			result := functionArgsToString(&tc.input)
 
 			if result != tc.expected {
-				t.Errorf("ERROR")
+				t.Errorf("\n\n%s (Result)\n\n ==vs==\n\n%s (Expected)\n\n", result, tc.expected)
 			}
 
 		})

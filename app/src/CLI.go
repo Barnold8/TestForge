@@ -64,7 +64,7 @@ func parseArgs(args []string) cliArgs {
 					}
 
 				} else {
-					fmt.Println("Error: --path requires a value")
+					fmt.Println("Error: --ignore requires a value(s)")
 				}
 
 			case "help":

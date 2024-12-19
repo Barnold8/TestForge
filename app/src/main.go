@@ -1,7 +1,9 @@
 package main
 
+import "os"
+
 func main() {
 
-	writeTests("test", false)
+	writeTests(parseArgs(os.Args))
 
 }
